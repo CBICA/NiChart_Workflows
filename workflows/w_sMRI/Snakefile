@@ -1,15 +1,15 @@
 
-#import pandas as pd
+import pandas as pd
 
-#report: "report/workflow.rst"
+report: "report/workflow.rst"
 
-#configfile: "../../config/config.yaml"
+configfile: "../../config/config.yaml"
 
-### Get list of studies (from data folder)
-#LIST_STUDIES = glob_wildcards("../../data/{study}/Lists/{study2}_Demog.csv").study
+## Get list of studies (from data folder)
+LIST_STUDIES = glob_wildcards("../../data/{study}/Lists/{study2}_Demog.csv").study
 
-#df_tmp = pd.read_csv(config["list_SPARE"])
-#LIST_SPARE = df_tmp.Model.tolist()
+df_tmp = pd.read_csv(config["list_SPARE"])
+LIST_SPARE = df_tmp.Model.tolist()
 
 ###################################
 ## Rules
@@ -17,8 +17,9 @@ rule ALL:
     #input:expand("../../data/{study}/data_prep_spare/{study}_{dtype}_combat{ctype}_merged.csv", study=['AIBL'], dtype=['normICV'], ctype=['AgeSex'])
     #input:expand("../../data/{study}/output_long/{study}_SPARE-Scores.csv", study = LIST_STUDIES)
     #
-    input:expand("../../data/{study}/merged_combat/{study}_raw_combatAgeSexICV.csv", study = LIST_STUDIES)
-    #input:expand("../../data/{study}/output_compact/{study}_sMRI_All.csv", study = LIST_STUDIES)
+    #input:expand("../../data/{study}/merged_combat/{study}_raw_combatAgeSexICV.csv", study = LIST_STUDIES)
+    #input:expand("../../data/{study}/merged_combat/{study}_normICV_combatAgeSex.csv", study = LIST_STUDIES)
+    input:expand("../../data/{study}/output_compact/{study}_sMRI_All.csv", study = LIST_STUDIES)
 
 rule rename_rois:
     '''
@@ -128,7 +129,7 @@ rule combat_merge_rois:
     params:
         key_var='MRID'
     output:
-        "../../data/{study}/merged_combat/{study}_{dtype}_combat{ctype}.csv",
+        temp("../../data/{study}/merged_combat/{study}_{dtype}_combat{ctype}.csv"),
     shell:
         "echo python utils/util_merge_two.py {input} {params} {output}; "
         "python utils/util_merge_two.py {input} {params} {output}; "
@@ -193,15 +194,15 @@ rule prep_compact_output:
     Merge demog data to DLMUSE
     '''
     input:
-        rois="../../config/list_MUSE_primaryROIs.csv",
+        rois="../../config/list_MUSE_primaryROI.csv",
         demog="../../data/{study}/Lists/{study}_Demog.csv",
         data="../../data/{study}/output_long/{study}_DLMUSE_raw.csv",
         datanorm="../../data/{study}/output_long/{study}_DLMUSE_normICV.csv",
-        dataharm="../../data/{study}/merged_combat/{study}_raw_singleROI_combatAgeSexICV.csv",
-        datanormharm="../../data/{study}/merged_combat/{study}_normICV_singleROI_combatAgeSex.csv",
+        dataharm="../../data/{study}/merged_combat/{study}_raw_combatAgeSexICV.csv",
+        datanormharm="../../data/{study}/merged_combat/{study}_normICV_combatAgeSex.csv",
         spare="../../data/{study}/output_long/{study}_SPARE-Scores.csv"
     output:
-        temp("../../data/{study}/output_compact/{study}_sMRI_All.csv")
+        "../../data/{study}/output_compact/{study}_sMRI_All.csv"
     params:
         key_var = 'MRID'
     shell:
