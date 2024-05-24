@@ -1,22 +1,24 @@
 
-import pandas as pd
+#import pandas as pd
 
-report: "report/workflow.rst"
+#report: "report/workflow.rst"
 
-configfile: "../../config/config.yaml"
+#configfile: "../../config/config.yaml"
 
-## Get list of studies (from data folder)
-LIST_STUDIES = glob_wildcards("../../data/{study}/Lists/{study2}_Demog.csv").study
+### Get list of studies (from data folder)
+#LIST_STUDIES = glob_wildcards("../../data/{study}/Lists/{study2}_Demog.csv").study
 
-df_tmp = pd.read_csv(config["list_SPARE"])
-LIST_SPARE = df_tmp.Model.tolist()
+#df_tmp = pd.read_csv(config["list_SPARE"])
+#LIST_SPARE = df_tmp.Model.tolist()
 
 ###################################
 ## Rules
 rule ALL:
     #input:expand("../../data/{study}/data_prep_spare/{study}_{dtype}_combat{ctype}_merged.csv", study=['AIBL'], dtype=['normICV'], ctype=['AgeSex'])
-    input:expand("../../data/{study}/SPARE/{study}_SPARE-Scores.csv", study = LIST_STUDIES)
-
+    #input:expand("../../data/{study}/output_long/{study}_SPARE-Scores.csv", study = LIST_STUDIES)
+    #
+    input:expand("../../data/{study}/merged_combat/{study}_raw_combatAgeSexICV.csv", study = LIST_STUDIES)
+    #input:expand("../../data/{study}/output_compact/{study}_sMRI_All.csv", study = LIST_STUDIES)
 
 rule rename_rois:
     '''
@@ -26,7 +28,7 @@ rule rename_rois:
         roi="../../data/{study}/DLMUSE/{study}_DLMUSE.csv",
         dict="../../config/list_MUSE_allROI.csv"
     output:
-        "../../data/{study}/output/{study}_DLMUSE_raw.csv"
+        "../../data/{study}/output_long/{study}_DLMUSE_raw.csv"
     shell:
         "python utils/util_rename_columns.py {input} {output}"
 
@@ -38,9 +40,9 @@ rule corr_icv:
     Normalize ROIs. Values are scaled either by a constant factor (NormICV) or 100 (PercICV)
     '''
     input:
-        "../../data/{study}/output/{study}_DLMUSE_raw.csv"
+        "../../data/{study}/output_long/{study}_DLMUSE_raw.csv"
     output:
-        "../../data/{study}/output/{study}_DLMUSE_normICV.csv"
+        "../../data/{study}/output_long/{study}_DLMUSE_normICV.csv"
     params:
         icv_var = 'ICV',
         exclude_vars = 'MRID',
@@ -58,7 +60,7 @@ rule merge_with demog:
     '''
     input:
         demog="../../data/{study}/Lists/{study}_Demog.csv",
-        data="../../data/{study}/output/{study}_DLMUSE_{dtype}.csv",
+        data="../../data/{study}/output_long/{study}_DLMUSE_{dtype}.csv",
     output:
         temp("../../data/{study}/data_prep_harm/{study}_DLMUSE_{dtype}_merged.csv")
     params:
@@ -94,7 +96,7 @@ rule combat_raw_selectroi:
         data="../../data/{study}/harmonization/{study}_raw_{rtype}_combatAgeSexICV.csv",
         rois="../../config/list_MUSE_{rtype}.csv",
     output:
-        csv="../../data/{study}/output/{study}_raw_{rtype}_combatAgeSexICV.csv"
+        csv="../../data/{study}/output_long/{study}_raw_{rtype}_combatAgeSexICV.csv"
     shell:
         "echo python utils/util_selvars_harm.py {input} {output}; "
         "python utils/util_selvars_harm.py {input} {output}; "
@@ -114,19 +116,19 @@ rule combat_normICV_selectroi:
         data="../../data/{study}/harmonization/{study}_normICV_{rtype}_combatAgeSex.csv",
         rois="../../config/list_MUSE_{rtype}.csv",
     output:
-        csv="../../data/{study}/output/{study}_normICV_{rtype}_combatAgeSex.csv"
+        csv="../../data/{study}/output_long/{study}_normICV_{rtype}_combatAgeSex.csv"
     shell:
         "echo python utils/util_selvars_harm.py {input} {output}; "
         "python utils/util_selvars_harm.py {input} {output}; "
 
 rule combat_merge_rois:
     input:
-        data2="../../data/{study}/output/{study}_{dtype}_compositeROI_combat{ctype}.csv",
-        data1="../../data/{study}/output/{study}_{dtype}_singleROI_combat{ctype}.csv",
+        data2="../../data/{study}/output_long/{study}_{dtype}_compositeROI_combat{ctype}.csv",
+        data1="../../data/{study}/output_long/{study}_{dtype}_singleROI_combat{ctype}.csv",
     params:
         key_var='MRID'
     output:
-        "../../data/{study}/output/{study}_{dtype}_combat{ctype}.csv",
+        "../../data/{study}/merged_combat/{study}_{dtype}_combat{ctype}.csv",
     shell:
         "echo python utils/util_merge_two.py {input} {params} {output}; "
         "python utils/util_merge_two.py {input} {params} {output}; "
@@ -140,10 +142,10 @@ rule prep_data_spare:
     '''
     input:
         demog="../../data/{study}/Lists/{study}_Demog.csv",
-        data="../../data/{study}/output/{study}_{dtype}.csv",
-        icv="../../data/{study}/output/{study}_DLMUSE_raw.csv",
+        data="../../data/{study}/output_long/{study}_{dtype}.csv",
+        icv="../../data/{study}/output_long/{study}_DLMUSE_raw.csv",
     output:
-        "../../data/{study}/data_prep_spare/{study}_{dtype}_merged.csv"
+        temp("../../data/{study}/data_prep_spare/{study}_{dtype}_merged.csv")
     params:
         key_var = 'MRID'
     shell:
@@ -155,7 +157,7 @@ rule spare_apply_raw_harm:
         data="../../data/{study}/data_prep_spare/{study}_raw_singleROI_combatAgeSexICV_merged.csv",
         mdl="../../models/SPARE/SPARE_{stype}_NiChartData_raw_singleROI_combatAgeSexICV_model.pkl.gz"
     output:
-        csv="../../data/{study}/SPARE/{study}_raw_{stype}.csv"
+        csv=temp("../../data/{study}/SPARE/{study}_raw_{stype}.csv")
     params:
         vkey='MRID',
     shell:
@@ -168,7 +170,7 @@ rule spare_apply_normICV_harm:
         #mdl="../../models/SPARE/SPARE-{smodel}_model.pkl.gz",
         mdl="../../models/SPARE/SPARE_C_AD-ISTAG_NiChartData_normICV_singleROI_combatAgeSex_model.pkl.gz"
     output:
-        csv="../../data/{study}/SPARE/{study}_normICV_{stype}.csv"
+        csv=temp("../../data/{study}/SPARE/{study}_normICV_{stype}.csv")
     params:
         vkey='MRID',
     shell:
@@ -179,7 +181,33 @@ rule spare_combine:
     input:
         data=expand("../../data/{{study}}/SPARE/{{study}}_{dtype}_{stype}.csv", dtype = ['raw', 'normICV'], stype = ['C_AD-ISTAG', 'C_V-Diabetes', 'C_V-Hypertension', 'R_V-Age']) 
     output:
-        csv="../../data/{study}/SPARE/{study}_SPARE-Scores.csv"
+        csv="../../data/{study}/output_long/{study}_SPARE-Scores.csv"
     shell:
         "echo python utils/util_combine_spare.py {output} {input}; "
         "python utils/util_combine_spare.py {output} {input}"
+
+#################################    
+## Create summary output
+rule prep_compact_output:
+    '''
+    Merge demog data to DLMUSE
+    '''
+    input:
+        rois="../../config/list_MUSE_primaryROIs.csv",
+        demog="../../data/{study}/Lists/{study}_Demog.csv",
+        data="../../data/{study}/output_long/{study}_DLMUSE_raw.csv",
+        datanorm="../../data/{study}/output_long/{study}_DLMUSE_normICV.csv",
+        dataharm="../../data/{study}/merged_combat/{study}_raw_singleROI_combatAgeSexICV.csv",
+        datanormharm="../../data/{study}/merged_combat/{study}_normICV_singleROI_combatAgeSex.csv",
+        spare="../../data/{study}/output_long/{study}_SPARE-Scores.csv"
+    output:
+        temp("../../data/{study}/output_compact/{study}_sMRI_All.csv")
+    params:
+        key_var = 'MRID'
+    shell:
+        "echo python utils/util_combine_all.py {output} {input}; "
+        "python utils/util_combine_all.py {output} {input}"
+
+
+
+
