@@ -1,4 +1,4 @@
-# **NiChart<sup>Desktop</sup>** 
+# **NiChart<sup>Workflows</sup>** 
 
 A toolkit that allows users to apply **NiChart** processing methods and pre-trained models on their data.  **NiChart<sup>Desktop</sup>** includes tools for [image processing](https://neuroimagingchart.com/components/#Image%20Processing), [data harmonization](https://neuroimagingchart.com/components/#Harmonization) and [machine learning](https://neuroimagingchart.com/components/#Machine%20Learning), using pre-trained models and reference distributions provided by [**NiChart<sup>Engine</sup>**](https://github.com/gurayerus/NiChart_Workflows/tree/main/NiChart_Engine). **NiChart<sup>Desktop</sup>** utilizes [Snakemake](https://snakemake.github.io) workflows to define multi-step image processing and data analytics pipelines.
 
