@@ -1,15 +1,15 @@
 # **NiChart<sup>Workflows</sup>** 
 
-A toolkit that allows users to apply **NiChart** processing methods and pre-trained models on their data.  **NiChart<sup>Desktop</sup>** includes tools for [image processing](https://neuroimagingchart.com/components/#Image%20Processing), [data harmonization](https://neuroimagingchart.com/components/#Harmonization) and [machine learning](https://neuroimagingchart.com/components/#Machine%20Learning), using pre-trained models and reference distributions provided by [**NiChart<sup>Engine</sup>**](https://github.com/gurayerus/NiChart_Workflows/tree/main/NiChart_Engine). **NiChart<sup>Desktop</sup>** utilizes [Snakemake](https://snakemake.github.io) workflows to define multi-step image processing and data analytics pipelines.
+A toolkit that allows users to apply **NiChart** processing methods and pre-trained models on their data.  **NiChart<sup>Workflows</sup>** includes tools for [image processing](https://neuroimagingchart.com/components/#Image%20Processing), [data harmonization](https://neuroimagingchart.com/components/#Harmonization) and [machine learning](https://neuroimagingchart.com/components/#Machine%20Learning), using pre-trained models and reference distributions provided by [**NiChart<sup>Engine</sup>**](https://github.com/gurayerus/NiChart_Engine). **NiChart<sup>Workflow</sup>** utilizes [Snakemake](https://snakemake.github.io) workflows to define multi-step image processing and data analytics pipelines.
 
 ![Workflow Diagram](docs/NiChart_Flowchart_Level1B.png)
 
 ## Installation:
 
-Install **NiChart<sup>Desktop</sup>** within a conda environment using the following command:
+Install dependencies for the **NiChart<sup>Workflow</sup>** in a conda environment using the following command:
 
 ```console
-pip install NiChart_Desktop
+pip install snakemake neuroharmonize spare_scores
 ```
 
 ## Usage:
@@ -44,18 +44,16 @@ Users can apply NiChart workflows to their data with a few simple steps:
 
 ## Examples:
 
-We provided data for a toy dataset "data/TestStudy" as an example. Please use it as a reference for your input data organization / naming. Also, you can apply the structural MRI workflow on this dataset as follows:
+We provided data for a toy dataset "data/Study1" as an example. Please use it as a reference for your input data. You can apply the structural MRI workflow on this dataset as follows:
 
 ```console
 cd workflows/w_sMRI
 snakemake -np           ## Dry run
-snakemake --cores 1     ## Run the pipeline on the TestStudy
+snakemake --cores 1     ## Run the pipeline on the Study1
 ```
 If the workflow works successfully, results will be created inside the study folder, e.g.:
 
-> "data/TestStudy/DLMUSE/TestStudy_DLMUSE.csv",
-
-> "data/TestStudy/SPARE/TestStudy_SPARE-AD.csv"
+> "data/Study1/output",
 
 ## Contributing:
 
