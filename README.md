@@ -6,10 +6,15 @@ A toolkit that allows users to apply **NiChart** processing methods and pre-trai
 
 ## Installation:
 
-Install dependencies for the **NiChart<sup>Workflow</sup>** in a conda environment using the following command:
+Install dependencies for the **NiChart<sup>Workflows</sup>** in a conda environment using the following commands. **NiChart<sup>Workflows</sup>** uses snakemake to automate things, which is (most easily) installed with mamba.
 
-```console
-pip install snakemake neuroharmonize spare_scores
+```bash
+conda install -n base -c conda-forge mamba # If needed
+mamba init # If first time installing, then potentially source ~/.bashrc
+mamba create -c conda-forge -c bioconda -n NiChart_Workflows python=3.8 
+mamba activate NiChart_Workflows
+pip install spare-scores NiChartHarmonize
+mamba install -c conda-forge -c bioconda snakemake
 ```
 
 ## Usage:
@@ -70,5 +75,5 @@ This project is licensed under the [License Name] license. Please refer to the L
 
 ## Contact:
 
-For any inquiries, please contact guray.erus@pennmedicine.upenn.edu. (Last Updated: 5/19/2024)
+For any inquiries, please contact guray.erus@pennmedicine.upenn.edu. (Last Updated: 5/24/2024)
 
