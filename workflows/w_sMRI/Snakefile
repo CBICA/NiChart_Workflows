@@ -20,7 +20,10 @@ configfile: "../../config/config_Test1.yaml"
 #OUT_FILES = OUT_CONFIG + OUT_RESULTS
 
 OUT_FILES = ["../../data/NiChart_Study1/combined/Study1_MUSE_percICV.csv"]
-OUT_FILES = ["../../data/NiChart_Study1/combined/Study1_MUSE_raw.csv"]
+OUT_FILES = ["../../data/NiChart_Study1/Study1/sel_vars/Study1_MUSE_raw.csv"]
+OUT_FILES = ["../../data/NiChart_Study1/Study1/sel_vars/Study1_MUSE_percICV.csv"]
+OUT_FILES = ["../../data/NiChart_Study1/Study1/harmonized/Study1_MUSE_raw.csv"]
+#"../../data/{dir_output}/{study}/harmonized/{study}_{dtype}.csv"
 
 print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
 
@@ -50,9 +53,9 @@ rule rename_rois:
     '''
     input:
         roi=expand("../../data/{dir_input}/{{study}}/{{study}}_{{dtype}}.csv", dir_input = config["dir_input"]),
-        dict=expand("../../config/{rois}", rois = config["list_ROIs"])
+        dict=expand("../../config/{rois}", rois = config["list_ROIs_all"])
     output:
-        temp("../../data/{dir_output}/renamed/{study}_{dtype}.csv")
+        "../../data/{dir_output}/{study}/renamed/{study}_{dtype}.csv"
     params:
         var_from = 'Index',
         var_to = 'Code'
@@ -69,11 +72,11 @@ rule merge_covars_to_rois:
     '''
     input:
         covar=expand("../../data/{dir_input}/{{study}}/{{study}}_Demog.csv", dir_input = config["dir_input"]),
-        roi="../../data/{dir_output}/renamed/{study}_{dtype}.csv",
+        roi="../../data/{dir_output}/{study}/renamed/{study}_{dtype}.csv",
     params:
         key_var = 'MRID'
     output:
-        "../../data/{dir_output}/combined/{study}_{dtype}_raw.csv"
+        "../../data/{dir_output}/{study}/combined/{study}_{dtype}_raw.csv"
     resources:
         mem_mb=8000
     shell:
@@ -84,13 +87,13 @@ rule correct_icv:
     Normalize ROIs. Values are scaled either by a constant factor (NormICV) or 100 (PercICV)
     '''
     input:
-        "../../data/{dir_output}/renamed/{study}_{dtype}.csv"
+        "../../data/{dir_output}/{study}/renamed/{study}_{dtype}.csv"
     params:
         icv_var = 'MUSE_702',
         exclude_vars = 'MRID',
         suffix = 'NONE'
     output:
-        "../../data/{dir_output}/corr_rois/{study}_{dtype}_{corr_type}.csv"
+        "../../data/{dir_output}/{study}/corr_rois/{study}_{dtype}_{corr_type}.csv"
     resources:
         mem_mb=8000
     shell:
@@ -103,37 +106,42 @@ rule merge_covars_to_corr_rois:
     '''
     input:
         covar=expand("../../data/{dir_input}/{{study}}/{{study}}_Demog.csv", dir_input = config["dir_input"]),
-        roi="../../data/{dir_output}/corr_rois/{study}_{dtype}_{ctype}.csv"
+        roi="../../data/{dir_output}/{study}/corr_rois/{study}_{dtype}_{ctype}.csv"
     params:
         key_var = 'MRID'
     output:
-        "../../data/{dir_output}/combined/{study}_{dtype}_{ctype}.csv"
+        "../../data/{dir_output}/{study}/combined/{study}_{dtype}_{ctype}.csv"
     resources:
         mem_mb=8000
     shell:
         "python ../../utils/util_merge_dfs.py {input} {params} {output}"
 
-#rule select_vars_harmonize:
-    #input:
-        #data="../../data/{study}/data_prep_harm/{study}_DLMUSE_{dtype}_merged.csv",
-        #rois="../../config/list_MUSE_{rtype}.csv",
-    #params:
-        #vars='MRID,Age,Sex,SITE,ICV'
-    #output:
-        #temp("../../data/{study}/data_prep_harm/{study}_DLMUSE_{dtype}_merged_hdata_{rtype}.csv")
-    #shell:
-        #"echo python utils/util_select_vars_harmonize.py {input} {params} {output};"
-        #"python utils/util_select_vars_harmonize.py {input} {params} {output};"
+rule select_vars_harmonize:
+    '''
+    Select variables for harmonization
+    '''
+    input:
+        in_csv="../../data/{dir_output}/{study}/combined/{study}_{dtype}.csv",
+        dict_csv=expand("../../config/{rois}", rois = config["list_ROIs_selected"])
+    params:
+        dict_var = 'Code',
+        covars ='MRID,Age,Sex,SITE,DLICV',
+    output:
+        "../../data/{dir_output}/{study}/sel_vars/{study}_{dtype}.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/util_select_vars.py {input} {params} {output}"
 
-#rule combat_apply_raw:
-    #input:
-        #data="../../data/{study}/data_prep_harm/{study}_DLMUSE_raw_merged_hdata_{rtype}.csv",
-        #mdl="../../models/harmonization/NiChartData_raw_{rtype}_combatAgeSexICV_Model.pkl.gz",
-    #output:
-        #csv=temp("../../data/{study}/harmonization/{study}_raw_{rtype}_combatAgeSexICV.csv")
-    #shell:
-        #"echo neuroharm -a apply -i {input.data} -m {input.mdl} -u {output.csv}; "
-        #"neuroharm -a apply -i {input.data} -m {input.mdl} -u {output.csv}"
+rule combat_apply_raw:
+    input:
+        data="../../data/{dir_output}/{study}/sel_vars/{study}_{dtype}.csv",
+        mdl=expand("../../models/{model}", model = config["model_combat"])
+    output:
+        csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}.csv"
+    shell:
+        "bash ../../utils/util_combat_test.sh {input} {output}"
+
         
 #rule combat_raw_selectroi:
     #input:
