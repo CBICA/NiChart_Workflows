@@ -1,4 +1,49 @@
+## Import packages
+import pandas as pd
 
+## Flag to indicate rules that will be run locally (e.g. not submitted to slurm)
+#localrules:
+
+### Report data
+#report: "report/workflow.rst"
+
+## Config file
+configfile: "../../config/config_vtest1.yaml"
+
+## Read study list from config
+df = pd.read_csv("../../config/" + config["list_studies_merge"])
+LIST_STUDIES = df.Study.tolist()
+
+###################################
+## Out file names
+
+OUT_CONFIG = expand("../../data/{dir_output}/config/{cname}", cname = ["config_prep_data.yaml",  config["list_covars"], config["list_ROIs"], config["list_studies_merge"]], dir_output = config["dir_output"])
+
+OUT_RESULTS = expand("../../data/{dir_output}/combined/combined_{dtype}_{ctype}.csv", dtype = config["roi_types"], ctype = config["corr_types"], dir_output = config["dir_output"])
+
+OUT_FILES = OUT_CONFIG + OUT_RESULTS
+
+print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
+
+###################################
+## Rules
+
+rule ALL:
+    '''
+    First rule: lists the final expected out files
+    '''
+    input: OUT_FILES
+
+rule copy_config:
+    '''
+    Rule for copying config files to output dir
+    '''
+    input:
+        "../../config/{cname}"
+    output:
+        expand("../../data/{dir_output}/config/{{cname}}", dir_output = config["dir_output"])
+    shell:
+        "cp -v {input} {output}"
 import pandas as pd
 
 report: "report/workflow.rst"

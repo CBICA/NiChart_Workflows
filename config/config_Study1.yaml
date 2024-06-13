@@ -1,0 +1,11 @@
+version: Study1_vtest1
+dir_input: Study1
+dir_output: NiChart_Study1
+list_ROIs: list_MUSE_single.csv
+list_models: list_models.csv
+SPARE_types:
+ - AD
+roi_types:
+ - MUSE
+corr_types:
+ - raw
