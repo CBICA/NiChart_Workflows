@@ -1,0 +1,11 @@
+version: vTest1
+dir_input: Test1
+dir_output: Test1_NiChart
+list_ROIs: list_MUSE_primary.csv
+list_models: list_models.csv
+SPARE_types:
+ - AD
+roi_types:
+ - MUSE
+corr_types:
+ - raw

@@ -15,7 +15,7 @@ if [ "${user_answer}" == 'yes' ]; then
     mkdir -p ../data
     echo "Copying input to data folder ..."
     for ll in $(ls -1 ../input); do
-        cp -r ../input/${ll} ../data
+        ln -s ../input/${ll} ../data
     done
     echo "Clean data folder created with links to input data!"
     echo "You can now run Snakemake to reproduce the results!"
