@@ -12,8 +12,8 @@ def filter_num_var(in_csv, var_name, min_val, max_val, out_csv):
     df = pd.read_csv(in_csv)
 
     # Filter data
-    df_out = df[df[var_name] > = min_val]
-    df_out = df_out[df_out[var_name] > = max_val]
+    df_out = df[df[var_name] >= min_val]
+    df_out = df_out[df_out[var_name] <= max_val]
     
     # Write out file
     df_out.to_csv(out_csv, index=False)
@@ -30,8 +30,6 @@ if __name__ == "__main__":
     min_val = int(sys.argv[3])
     max_val = int(sys.argv[4])
     out_csv = sys.argv[5]
-
-    list_rename_vars = rename_vars.split(',')
 
     # Call the function
     filter_num_var(in_csv, var_name, min_val, max_val, out_csv)

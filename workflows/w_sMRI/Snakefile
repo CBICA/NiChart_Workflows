@@ -19,10 +19,7 @@ configfile: "../../config/config_Test1.yaml"
 
 #OUT_FILES = OUT_CONFIG + OUT_RESULTS
 
-OUT_FILES = ["../../data/NiChart_Study1/combined/Study1_MUSE_percICV.csv"]
-OUT_FILES = ["../../data/NiChart_Study1/Study1/sel_vars/Study1_MUSE_raw.csv"]
-OUT_FILES = ["../../data/NiChart_Study1/Study1/sel_vars/Study1_MUSE_percICV.csv"]
-OUT_FILES = ["../../data/NiChart_Study1/Study1/harmonized/Study1_MUSE_raw.csv"]
+OUT_FILES = ["../../data/NiChart_Study1/Study1/harmonized/Study1_MUSE_raw_COMBAT.csv"]
 #"../../data/{dir_output}/{study}/harmonized/{study}_{dtype}.csv"
 
 print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
@@ -133,12 +130,30 @@ rule select_vars_harmonize:
     shell:
         "python ../../utils/util_select_vars.py {input} {params} {output}"
 
+rule filter_age_harmonize:
+    '''
+    Check that sample has age range consistent with the model
+    '''
+    input:
+        "../../data/{dir_output}/{study}/sel_vars/{study}_{dtype}.csv",
+    params:
+        var_name='Age',
+        min_val='50',
+        max_val='95',
+    output:
+        "../../data/{dir_output}/{study}/filtered_data/{study}_{dtype}.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/util_filter_num_var.py {input} {params} {output}"
+
+
 rule combat_apply_raw:
     input:
-        data="../../data/{dir_output}/{study}/sel_vars/{study}_{dtype}.csv",
+        data="../../data/{dir_output}/{study}/filtered_data/{study}_{dtype}.csv",
         mdl=expand("../../models/{model}", model = config["model_combat"])
     output:
-        csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}.csv"
+        csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT.csv"
     shell:
         "bash ../../utils/util_combat_test.sh {input} {output}"
 
