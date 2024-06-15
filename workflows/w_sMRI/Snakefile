@@ -147,79 +147,81 @@ rule filter_age_harmonize:
     shell:
         "python ../../utils/util_filter_num_var.py {input} {params} {output}"
 
-
-rule combat_apply_raw:
+rule combat_apply:
     input:
         data="../../data/{dir_output}/{study}/filtered_data/{study}_{dtype}.csv",
         mdl=expand("../../models/{model}", model = config["model_combat"])
     output:
-        csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT.csv"
+        csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_init.csv"
     shell:
         "bash ../../utils/util_combat_test.sh {input} {output}"
 
-        
-#rule combat_raw_selectroi:
-    #input:
-        #data="../../data/{study}/harmonization/{study}_raw_{rtype}_combatAgeSexICV.csv",
-        #rois="../../config/list_MUSE_{rtype}.csv",
-    #output:
-        #csv="../../data/{study}/output_long/{study}_raw_{rtype}_combatAgeSexICV.csv"
-    #shell:
-        #"echo python utils/util_selvars_harm.py {input} {output}; "
-        #"python utils/util_selvars_harm.py {input} {output}; "
+rule remove_COMBAT_suffix:
+    '''
+    Remove COMBAT suffix (_HARM)
+    FIXME: Ideally COMBAT should be run with an arg to create output var names without a suffix
+    '''        
+    input:
+        "../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_init.csv"
+    params:
+        rm_suff='_HARM'
+    output:
+        "../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_renamed.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/util_remove_suffix.py {input} {params} {output}"
 
-#rule combat_apply_normICV:
-    #input:
-        #data="../../data/{study}/data_prep_harm/{study}_DLMUSE_normICV_merged_hdata_{rtype}.csv",
-        #mdl="../../models/harmonization/NiChartData_normICV_{rtype}_combatAgeSex_Model.pkl.gz",
-    #output:
-        #csv=temp("../../data/{study}/harmonization/{study}_normICV_{rtype}_combatAgeSex.csv")
-    #shell:
-        #"echo neuroharm -a apply -i {input.data} -m {input.mdl} -u {output.csv};"
-        #"neuroharm -a apply -i {input.data} -m {input.mdl} -u {output.csv}"
+rule select_harmonized_roi_vars:
+    '''
+    Select variables from harmonized data
+    '''
+    input:
+        in_csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_renamed.csv",
+        in_dict=expand("../../config/{rois}", rois = config["list_ROIs_selected"])
+    params:
+        dict_var = 'Code',
+        vars_list = 'MRID',
+    output:
+        "../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_rois.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/util_select_vars.py {input} {params} {output}"
 
-#rule combat_normICV_selectroi:
-    #input:
-        #data="../../data/{study}/harmonization/{study}_normICV_{rtype}_combatAgeSex.csv",
-        #rois="../../config/list_MUSE_{rtype}.csv",
-    #output:
-        #csv="../../data/{study}/output_long/{study}_normICV_{rtype}_combatAgeSex.csv"
-    #shell:
-        #"echo python utils/util_selvars_harm.py {input} {output}; "
-        #"python utils/util_selvars_harm.py {input} {output}; "
+rule merge_covars_to_harmonized_rois:
+    '''
+    Merge covars to ROIs
+    '''
+    input:
+        covar=expand("../../data/{dir_input}/{{study}}/{{study}}_Demog.csv", dir_input = config["dir_input"]),
+        roi="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_rois.csv"
+    params:
+        key_var = 'MRID'
+    output:
+        "../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/util_merge_dfs.py {input} {params} {output}"
 
-#rule combat_merge_rois:
-    #input:
-        #data2="../../data/{study}/output_long/{study}_{dtype}_compositeROI_combat{ctype}.csv",
-        #data1="../../data/{study}/output_long/{study}_{dtype}_singleROI_combat{ctype}.csv",
-    #params:
-        #key_var='MRID'
-    #output:
-        #temp("../../data/{study}/merged_combat/{study}_{dtype}_combat{ctype}.csv"),
-    #shell:
-        #"echo python utils/util_merge_two.py {input} {params} {output}; "
-        #"python utils/util_merge_two.py {input} {params} {output}; "
+rule prep_data_spare:
+    '''
+    Merge demog data
+    '''
+    input:
+        demog="../../data/{study}/Lists/{study}_Demog.csv",
+        data="../../data/{study}/output_long/{study}_{dtype}.csv",
+        icv="../../data/{study}/output_long/{study}_DLMUSE_raw.csv",
+    output:
+        temp("../../data/{study}/data_prep_spare/{study}_{dtype}_merged.csv")
+    params:
+        key_var = 'MRID'
+    shell:
+        "echo python utils/util_merge_data_spare.py {output} {params} {input}; "
+        "python utils/util_merge_data_spare.py {output} {params} {input}"
 
-##################################    
-### SPARE
-
-#rule prep_data_spare:
-    #'''
-    #Merge demog data
-    #'''
-    #input:
-        #demog="../../data/{study}/Lists/{study}_Demog.csv",
-        #data="../../data/{study}/output_long/{study}_{dtype}.csv",
-        #icv="../../data/{study}/output_long/{study}_DLMUSE_raw.csv",
-    #output:
-        #temp("../../data/{study}/data_prep_spare/{study}_{dtype}_merged.csv")
-    #params:
-        #key_var = 'MRID'
-    #shell:
-        #"echo python utils/util_merge_data_spare.py {output} {params} {input}; "
-        #"python utils/util_merge_data_spare.py {output} {params} {input}"
-
-#rule spare_apply_raw_harm:
+#rule spare_apply:
     #input:
         #data="../../data/{study}/data_prep_spare/{study}_raw_singleROI_combatAgeSexICV_merged.csv",
         #mdl="../../models/SPARE/SPARE_{stype}_NiChartData_raw_singleROI_combatAgeSexICV_model.pkl.gz"
