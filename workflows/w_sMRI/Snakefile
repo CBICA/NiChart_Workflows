@@ -10,6 +10,13 @@ import pandas as pd
 ## Config file
 configfile: "../../config/config_Test1.yaml"
 
+## Read SPARE model paths
+df_tmp = pd.read_csv('../../config/' + config['list_SPARE_models'], index_col = 'Model')
+DICT_SPARE = df_tmp.Path.to_dict()
+
+#print(DICT_SPARE)
+#input()
+
 ###################################
 ## Out file names
 
@@ -20,6 +27,7 @@ configfile: "../../config/config_Test1.yaml"
 #OUT_FILES = OUT_CONFIG + OUT_RESULTS
 
 OUT_FILES = ["../../data/NiChart_Study1/Study1/harmonized/Study1_MUSE_raw_COMBAT.csv"]
+OUT_FILES = ["../../data/NiChart_Study1/Study1/spare/Study1_MUSE_raw_COMBAT_SPARE-AD.csv"]
 #"../../data/{dir_output}/{study}/harmonized/{study}_{dtype}.csv"
 
 print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
@@ -205,46 +213,35 @@ rule merge_covars_to_harmonized_rois:
     shell:
         "python ../../utils/util_merge_dfs.py {input} {params} {output}"
 
-rule prep_data_spare:
+rule select_vars_spare:
     '''
-    Merge demog data
+    Select variables for harmonization
     '''
     input:
-        demog="../../data/{study}/Lists/{study}_Demog.csv",
-        data="../../data/{study}/output_long/{study}_{dtype}.csv",
-        icv="../../data/{study}/output_long/{study}_DLMUSE_raw.csv",
-    output:
-        temp("../../data/{study}/data_prep_spare/{study}_{dtype}_merged.csv")
+        in_csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT.csv",
+        dict_csv=expand("../../config/{rois}", rois = config["list_ROIs_selected"])
     params:
-        key_var = 'MRID'
+        dict_var = 'Code',
+        covars ='MRID,Age,Sex,DLICV',
+    output:
+        "../../data/{dir_output}/{study}/spare/{study}_{dtype}_COMBAT.csv"
+    resources:
+        mem_mb=8000
     shell:
-        "echo python utils/util_merge_data_spare.py {output} {params} {input}; "
-        "python utils/util_merge_data_spare.py {output} {params} {input}"
+        "python ../../utils/util_select_vars.py {input} {params} {output}"
 
-#rule spare_apply:
-    #input:
-        #data="../../data/{study}/data_prep_spare/{study}_raw_singleROI_combatAgeSexICV_merged.csv",
-        #mdl="../../models/SPARE/SPARE_{stype}_NiChartData_raw_singleROI_combatAgeSexICV_model.pkl.gz"
-    #output:
-        #csv=temp("../../data/{study}/SPARE/{study}_raw_{stype}.csv")
-    #params:
-        #vkey='MRID',
-    #shell:
-        #"echo spare_score -a test -i {input.data} -m {input.mdl} -o {output.csv}; "
-        #"spare_score -a test -i {input.data} -m {input.mdl} -o {output.csv}"
+def get_spare_model(wildcards):
+    path_spare='../../models/' + DICT_SPARE[wildcards.stype]
+    return path_spare
 
-#rule spare_apply_normICV_harm:
-    #input:
-        #data="../../data/{study}/data_prep_spare/{study}_normICV_singleROI_combatAgeSex_merged.csv",
-        ##mdl="../../models/SPARE/SPARE-{smodel}_model.pkl.gz",
-        #mdl="../../models/SPARE/SPARE_C_AD-ISTAG_NiChartData_normICV_singleROI_combatAgeSex_model.pkl.gz"
-    #output:
-        #csv=temp("../../data/{study}/SPARE/{study}_normICV_{stype}.csv")
-    #params:
-        #vkey='MRID',
-    #shell:
-        #"echo spare_score -a test -i {input.data} -m {input.mdl} -o {output.csv}; "
-        #"spare_score -a test -i {input.data} -m {input.mdl} -o {output.csv}"
+rule spare_apply:
+    input:
+        data="../../data/{dir_output}/{study}/spare/{study}_{dtype}_COMBAT.csv",
+        mdl=get_spare_model
+    output:
+        data="../../data/{dir_output}/{study}/spare/{study}_{dtype}_COMBAT_SPARE-{stype}.csv"
+    shell:
+        "bash ../../utils/util_spare_test.sh {input} {output}"
 
 #rule spare_combine:
     #input:
