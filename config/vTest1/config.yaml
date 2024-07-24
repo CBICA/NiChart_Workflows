@@ -1,0 +1,12 @@
+version: vTest1
+dir_input: InitData_Test1
+list_ROIs_all: list_MUSE_all.csv
+list_ROIs_selected: list_MUSE_primary.csv
+model_combat: vISTAG1/COMBAT/combined_DLMUSE_raw_COMBATModel.pkl.gz
+model_SPARE-AD: vISTAG1/SPARE/combined_DLMUSE_raw_COMBAT_SPARE-AD_Model.pkl.gz
+SPARE_types:
+ - AD
+roi_types:
+ - DLMUSE
+corr_types:
+ - raw
