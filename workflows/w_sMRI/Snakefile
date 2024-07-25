@@ -7,69 +7,41 @@ import pandas as pd
 ### Report data
 #report: "report/workflow.rst"
 
-## Config file
-configfile: "../../config/vTest1/config.yaml"
+###################################
+## Default config file 
+## Runs the workflow with the test dataset
+## Edit this for running it on other datasets
+in_config = "../../config/vTest/config.yaml"
+configfile: f"{in_config}"
+###################################
+
 
 ###################################
 ## Read config vars and lists
-
 dir_input = config["dir_input"]
-dir_output = config["version"]
+dir_output = config["dir_output"]
 derived_rois = config["list_derived_ROIs"]
 rois = config["list_ROIs_all"]
 rois_single = config["list_ROIs_single"]
 rois_primary = config["list_ROIs_primary"]
 spare_types = config["SPARE_types"]
 model_combat = config["model_combat"]
+seg_types = config["seg_types"]
 corr_type = config["corr_type"]
-
-#df = pd.read_csv("../../config/" + config["list_studies_merge"])
-#LIST_STUDIES = df.Study.tolist()
-
+studies = config["studies"]
 
 ###################################
-## Set out file names
+## Set output file names
+OUT_CONFIG = f"../../{dir_output}/config/config.yaml"
+OUT_RESULTS = expand(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{stype}}_VIEWED.csv", study = studies, stype = seg_types)
 
-#OUT_CONFIG = expand("../../data/{dir_output}/config/{cname}", cname = ["config_prep_data.yaml",  config["list_covars"], config["list_ROIs"], config["list_studies_merge"]], dir_output = dir_output)
+OUT_FILES = [OUT_CONFIG] + OUT_RESULTS
+#OUT_FILES = [OUT_CONFIG]
 
-#OUT_RESULTS = expand("../../data/{dir_output}/combined/combined_{dtype}_{ctype}.csv", dtype = rois, ctype = corr_type, dir_output = dir_output)
-
-#OUT_FILES = OUT_CONFIG + OUT_RESULTS
-
-OUT_FILES = ["../../data/vTest1/Study1/harmonized/Study1_MUSE_raw_COMBAT.csv"]
-OUT_FILES = ["../../data/vTest1/Study1/spare/Study1_MUSE_raw_COMBAT_SPARE-AD.csv"]
-
-OUT_FILES = ["../../data/vTest1/Study1/harmonized/Study1_DLMUSE_raw_COMBAT.csv"]
-
-#OUT_FILES = ["../../data/vTest1/Study1/spare/Study1_DLMUSE_raw_COMBAT.csv"]
-
-#OUT_FILES = ["../../data/vTest1/Study1/spare/Study1_DLMUSE_raw_COMBAT_SPARE-AD.csv"]
-
-#OUT_FILES = ["../../data/vTest1/Study1/out_data/Study1_SPARE-AD.csv"]
-
-
-OUT_FILES = ["../../data/vTest1/Study1/out_data/Study1_DLMUSE_raw_SPARE-Scores.csv"]
-
-OUT_FILES = ["../../data/vTest1/Study1/harmonized/Study1_DLMUSE_raw_COMBAT_all.csv"]
-
-OUT_FILES = ["../../data/vTest1/Study1/out_rois/Study1_DLMUSE_normICV.csv"]
-#OUT_FILES = ["../../data/vTest1/Study1/out_rois/Study1_DLMUSE_raw.csv"]
-OUT_FILES = ["../../data/vTest1/Study1/combined/Study1_DLMUSE_normICV.csv"]
-
-OUT_FILES = ["../../data/vTest1/Study1/out_spare/Study1_SPARE-AD.csv"]
-
-OUT_FILES = ["../../data/vTest1/Study1/out_spare/Study1_DLMUSE_raw_COMBAT_SPARE-Scores.csv"]
-
-OUT_FILES = ["../../data/vTest1/Study1/out_combined/Study1_DLMUSE_VIEWED.csv"]
-
-
-#"../../data/{dir_output}/{study}/harmonized/{study}_{dtype}.csv"
-
-#print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
+print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
 
 ###################################
 ## Rules
-
 rule ALL:
     '''
     First rule: lists the final expected out files
@@ -81,9 +53,9 @@ rule copy_config:
     Rule for copying config files to output dir
     '''
     input:
-        "../../config/{cname}"
+        f"{in_config}"
     output:
-        f"../../data/{dir_output}/config/{{cname}}"
+        f"{OUT_CONFIG}"
     shell:
         "cp -v {input} {output}"
 
@@ -92,10 +64,10 @@ rule rename_rois:
     Rename MUSE roi indices to roi codes
     '''
     input:
-        roi=f"../../data/{dir_input}/{{study}}/{{study}}_{{dtype}}.csv",
-        dict=f"../../config/{rois}"
+        roi=f"../../{dir_input}/{{study}}/{{study}}_{{dtype}}.csv",
+        dict=f"../../{rois}"
     output:
-        f"../../data/{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
+        f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
     params:
         var_from = 'Index',
         var_to = 'Code'
@@ -109,13 +81,13 @@ rule correct_icv:
     Normalize ROIs. Values are scaled either by a constant factor (NormICV) or 100 (PercICV)
     '''
     input:
-        f"../../data/{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
+        f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
     params:
         icv_var = 'MUSE_702',
         exclude_vars = 'MRID',
         suffix = 'NONE'
     output:
-        f"../../data/{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_{corr_type}.csv"
+        f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_{corr_type}.csv"
     resources:
         mem_mb=8000
     shell:
@@ -126,12 +98,12 @@ rule merge_covars:
     Merge covars to ROIs
     '''
     input:
-        covar=f"../../data/{dir_input}/{{study}}/{{study}}_Demog.csv",
-        roi=f"../../data/{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}.csv",
+        covar=f"../../{dir_input}/{{study}}/{{study}}_Demog.csv",
+        roi=f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}.csv",
     params:
         key_var = 'MRID'
     output:
-        temp(f"../../data/{dir_output}/{{study}}/combined/{{study}}_{{dtype}}.csv")
+        temp(f"../../{dir_output}/{{study}}/combined/{{study}}_{{dtype}}.csv")
     resources:
         mem_mb=8000
     shell:
@@ -142,13 +114,13 @@ rule select_vars_harmonize:
     Select variables for harmonization
     '''
     input:
-        in_csv=f"../../data/{dir_output}/{{study}}/combined/{{study}}_{{dtype}}_raw.csv",
-        dict_csv=f"../../config/{rois_single}"
+        in_csv=f"../../{dir_output}/{{study}}/combined/{{study}}_{{dtype}}_raw.csv",
+        dict_csv=f"../../{rois_single}"
     params:
         dict_var = 'Code',
         covars ='MRID,Age,Sex,SITE,DLICV',
     output:
-        temp(f"../../data/{dir_output}/{{study}}/sel_vars/{{study}}_{{dtype}}_raw.csv")
+        temp(f"../../{dir_output}/{{study}}/sel_vars/{{study}}_{{dtype}}_raw.csv")
     resources:
         mem_mb=8000
     shell:
@@ -159,13 +131,13 @@ rule filter_age_harmonize:
     Check that sample has age range consistent with the model
     '''
     input:
-        f"../../data/{dir_output}/{{study}}/sel_vars/{{study}}_{{dtype}}.csv",
+        f"../../{dir_output}/{{study}}/sel_vars/{{study}}_{{dtype}}.csv",
     params:
         var_name='Age',
         min_val='50',
         max_val='95',
     output:
-        temp(f"../../data/{dir_output}/{{study}}/filtered_data/{{study}}_{{dtype}}.csv")
+        temp(f"../../{dir_output}/{{study}}/filtered_data/{{study}}_{{dtype}}.csv")
     resources:
         mem_mb=8000
     shell:
@@ -173,10 +145,10 @@ rule filter_age_harmonize:
 
 rule combat_apply:
     input:
-        data=f"../../data/{dir_output}/{{study}}/filtered_data/{{study}}_{{dtype}}.csv",
-        mdl=f"../../models/{model_combat}"
+        data=f"../../{dir_output}/{{study}}/filtered_data/{{study}}_{{dtype}}.csv",
+        mdl=f"../../{model_combat}"
     output:
-        f"../../data/{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_COMBAT_single.csv"
+        f"../../{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_COMBAT_single.csv"
     shell:
         "bash ../../utils/combat/util_combat_test.sh {input} {output}"
 
@@ -186,13 +158,13 @@ rule calc_derived_ROIs:
     - If the input data already includes derived ROIs, they will not be updated
     '''        
     input:
-        in_csv=f"../../data/{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_COMBAT_single.csv",
-        dict=f"../../config/{derived_rois}"
+        in_csv=f"../../{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_COMBAT_single.csv",
+        dict=f"../../{derived_rois}"
     params:
         key_var='MRID',
         roi_prefix='MUSE_'
     output:
-        f"../../data/{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_COMBAT_all.csv"
+        f"../../{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_COMBAT_all.csv"
     resources:
         mem_mb=8000
     shell:
@@ -203,12 +175,12 @@ rule merge_covars_to_harmonized_rois:
     Merge covars to ROIs
     '''
     input:
-        covar=f"../../data/{dir_input}/{{study}}/{{study}}_Demog.csv",
-        roi=f"../../data/{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_COMBAT_single.csv"
+        covar=f"../../{dir_input}/{{study}}/{{study}}_Demog.csv",
+        roi=f"../../{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_COMBAT_single.csv"
     params:
         key_var = 'MRID'
     output:
-        temp(f"../../data/{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT_withcovar.csv")
+        temp(f"../../{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT_withcovar.csv")
     resources:
         mem_mb=8000
     shell:
@@ -219,13 +191,13 @@ rule select_vars_spare:
     Select variables for harmonization
     '''
     input:
-        in_csv=f"../../data/{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT_withcovar.csv",
-        dict_csv=f"../../config/{rois_single}"
+        in_csv=f"../../{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT_withcovar.csv",
+        dict_csv=f"../../{rois_single}"
     params:
         dict_var = 'Code',
         covars ='MRID,Age,Sex,DLICV',
     output:
-        temp(f"../../data/{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT.csv")
+        temp(f"../../{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT.csv")
     resources:
         mem_mb=8000
     shell:
@@ -233,27 +205,27 @@ rule select_vars_spare:
 
 def get_spare_model(wildcards):
     model_name = config["model_SPARE-" + wildcards.stype]
-    path_spare='../../models/' + model_name
+    path_spare='../../' + model_name
     return path_spare
 
 rule spare_apply:
     input:
-        data=f"../../data/{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT.csv",
+        data=f"../../{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT.csv",
         mdl=get_spare_model
     output:
-        temp(f"../../data/{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_COMBAT_SPARE-{{stype}}.csv")
+        temp(f"../../{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_COMBAT_SPARE-{{stype}}.csv")
     shell:
         "bash ../../utils/generic/util_spare_test.sh {input} {wildcards.stype} {output}"
 
 def get_spare_results(wildcards):
-    data_spare=expand(f"../../data/{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_COMBAT_SPARE-{{stype}}.csv", study = wildcards.study, dtype = wildcards.dtype, stype = spare_types)
+    data_spare=expand(f"../../{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_COMBAT_SPARE-{{stype}}.csv", study = wildcards.study, dtype = wildcards.dtype, stype = spare_types)
     return data_spare
 
 rule spare_combine:
     input:
         get_spare_results
     output:
-        csv=f"../../data/{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_COMBAT_SPARE-Scores.csv"
+        csv=f"../../{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_COMBAT_SPARE-Scores.csv"
     shell:
         "python ../../utils/generic/util_merge_dfs_multi.py {output} MRID {input}"
 
@@ -262,14 +234,14 @@ rule prep_output:
     Merge demog data to DLMUSE
     '''
     input:
-        demog=f"../../data/{dir_input}/{{study}}/{{study}}_Demog.csv",
-        rois=f"../../config/{rois_primary}",
-        out_raw=f"../../data/{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv",
-        out_corr=f"../../data/{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_{corr_type}.csv",
-        out_harm=f"../../data/{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_raw_COMBAT_all.csv",
-        out_spare=f"../../data/{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_raw_COMBAT_SPARE-Scores.csv"
+        demog=f"../../{dir_input}/{{study}}/{{study}}_Demog.csv",
+        rois=f"../../{rois_primary}",
+        out_raw=f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv",
+        out_corr=f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_{corr_type}.csv",
+        out_harm=f"../../{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_raw_COMBAT_all.csv",
+        out_spare=f"../../{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_raw_COMBAT_SPARE-Scores.csv"
     output:
-        f"../../data/{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_All.csv"
+        f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_All.csv"
     params:
         key_var = 'MRID'
     shell:
@@ -280,8 +252,8 @@ rule launch_viewer:
     Launch the viewer with the output file
     '''
     input:
-        f"../../data/{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_All.csv"
+        f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_All.csv"
     output:
-        touch(f"../../data/{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
+        touch(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
     shell:
         "NiChart_Viewer --data_file {input}"

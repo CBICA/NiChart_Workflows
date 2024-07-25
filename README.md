@@ -13,7 +13,7 @@ conda install -n base -c conda-forge mamba # If needed
 mamba init # If first time installing, then potentially source ~/.bashrc
 mamba create -c conda-forge -c bioconda -n NiChart_Workflows python=3.8 
 mamba activate NiChart_Workflows
-pip install spare-scores NiChartHarmonize
+pip install NiChart-Viewer-Demo spare-scores NiChartHarmonize
 mamba install -c conda-forge -c bioconda snakemake
 ```
 
