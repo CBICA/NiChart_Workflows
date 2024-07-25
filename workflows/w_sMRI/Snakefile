@@ -215,7 +215,7 @@ rule spare_apply:
     output:
         temp(f"../../{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_COMBAT_SPARE-{{stype}}.csv")
     shell:
-        "bash ../../utils/generic/util_spare_test.sh {input} {wildcards.stype} {output}"
+        "bash ../../utils/spare/util_spare_test.sh {input} {wildcards.stype} {output}"
 
 def get_spare_results(wildcards):
     data_spare=expand(f"../../{dir_output}/{{study}}/out_spare/{{study}}_{{dtype}}_COMBAT_SPARE-{{stype}}.csv", study = wildcards.study, dtype = wildcards.dtype, stype = spare_types)
