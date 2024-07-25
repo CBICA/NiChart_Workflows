@@ -255,11 +255,11 @@ rule launch_viewer:
     input:
         f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_All.csv"
     output:
-        #touch(f"../../{dir_output}/flag_VIEWED_{{study}}.csv")
-        touch(f"../../{dir_output}/flag_VIEWED.csv")
+        flag1=touch(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
+        flag2=touch(f"../../{dir_output}/flag_VIEWED_ALL.csv")
     shell:
         "NiChart_Viewer --data_file {input}"
         
-### Delete flag for the viewer, so that it will launch the viewer next time
-#if os.path.exists(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv"):
-    #os.remove(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
+## Delete flag for the viewer, so that it will launch the viewer next time
+if os.path.exists(f"../../{dir_output}/flag_VIEWED_ALL.csv"):
+    os.remove(f"../../{dir_output}/flag_VIEWED_ALL.csv")
