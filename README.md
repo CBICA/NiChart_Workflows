@@ -21,7 +21,7 @@ mamba install -c conda-forge -c bioconda snakemake
 
 Users can apply NiChart workflows to their data with a few simple steps:
 
-***1. Copy Data:*** Transfer your data to the designated location within the project directory.
+***1. Copy Data:*** Transfer your data to the designated input folder within the project directory.
 
 ***2. Edit Configuration File:*** Make any necessary adjustments to the configuration file as specified by the package documentation.
 
@@ -29,36 +29,20 @@ Users can apply NiChart workflows to their data with a few simple steps:
 
 ***! For successful workflow execution, user data should meet specific requirements:***
 
-- Input scans should be copied to a folder named:
-  
-  > "data/{study name}/Images"
-  
-  where {study name} is a variable for the dataset or study.
-  
-  Users can create multiple "data/{study name}" folders. Each dataset or study is processed independently, with results saved in sub-folders of the study folder.
-  
-- A list named:
-  
-  > "data/{study name}/Lists/{study name}_Demog.csv"
-  
-  with demographic information for each subject. The list should include the columns
-  
-    * **MRID**: ID of each scan
-    * **Age**: Age of the subject
-    * **Sex**: Sex of the subject (M/F)
+***! Please see the test dataset for an example***
 
 ## Examples:
 
-We provided data for a toy dataset "data/Study1" as an example. Please use it as a reference for your input data. You can apply the structural MRI workflow on this dataset as follows:
+We provided a toy dataset "input/vTest" as an example. Please use it as a reference for your input data. You can apply a sample NiChart workflow on this dataset as follows:
 
 ```console
 cd workflows/w_sMRI
 snakemake -np           ## Dry run
 snakemake --cores 1     ## Run the pipeline on the Study1
 ```
-If the workflow works successfully, results will be created inside the study folder, e.g.:
+If the workflow works successfully, results will be created inside the output folder:
 
-> "data/Study1/output",
+> "../../output/vTest",
 
 ## Contributing:
 
