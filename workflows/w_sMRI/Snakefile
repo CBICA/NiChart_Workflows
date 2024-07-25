@@ -34,9 +34,10 @@ studies = config["studies"]
 ###################################
 ## Set output file names
 OUT_CONFIG = f"../../{dir_output}/config/config.yaml"
-OUT_RESULTS = expand(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{stype}}_VIEWED.csv", study = studies, stype = seg_types)
+OUT_RESULTS = expand(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{stype}}_All.csv", study = studies, stype = seg_types)
+OUT_FLAG = [f"../../{dir_output}/flag_VIEWED.csv"]
 
-OUT_FILES = [OUT_CONFIG] + OUT_RESULTS
+OUT_FILES = [OUT_CONFIG] + OUT_RESULTS + OUT_FLAG
 #OUT_FILES = [OUT_CONFIG]
 
 print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
@@ -79,7 +80,7 @@ rule rename_rois:
 
 rule correct_icv:
     '''
-    Normalize ROIs. Values are scaled either by a constant factor (NormICV) or 100 (PercICV)
+    Normalize ROIs. Values are scaled either by f"../../{dir_output}/a constant factor (NormICV) or 100 (PercICV)
     '''
     input:
         f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
@@ -253,13 +254,12 @@ rule launch_viewer:
     Launch the viewer with the output file
     '''
     input:
-        f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_All.csv"
+        expand(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{stype}}_All.csv", study = studies, stype = seg_types)
     output:
-        flag1=touch(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
-        flag2=touch(f"../../{dir_output}/flag_VIEWED_ALL.csv")
+        touch(f"../../{dir_output}/flag_VIEWED.csv"),
     shell:
         "NiChart_Viewer --data_file {input}"
         
 ## Delete flag for the viewer, so that it will launch the viewer next time
-if os.path.exists(f"../../{dir_output}/flag_VIEWED_ALL.csv"):
-    os.remove(f"../../{dir_output}/flag_VIEWED_ALL.csv")
+if os.path.exists(f"../../{dir_output}/flag_VIEWED.csv"):
+    os.remove(f"../../{dir_output}/flag_VIEWED.csv")
