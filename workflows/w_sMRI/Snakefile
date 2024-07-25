@@ -1,5 +1,6 @@
 ## Import packages
 import pandas as pd
+import os
 
 ## Flag to indicate rules that will be run locally (e.g. not submitted to slurm)
 #localrules:
@@ -257,3 +258,6 @@ rule launch_viewer:
         touch(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
     shell:
         "NiChart_Viewer --data_file {input}"
+        
+## Delete flag for the viewer, so that it will launch the viewer next time
+os.remove(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
