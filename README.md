@@ -38,7 +38,7 @@ We provided a toy dataset "input/vTest" as an example. Please use it as a refere
 ```console
 cd workflows/w_sMRI
 snakemake -np           ## Dry run
-snakemake --cores 1     ## Run the pipeline on the Study1
+snakemake --cores 1     ## Run the pipeline on Study1 data provided in the test dataset
 ```
 If the workflow works successfully, results will be created inside the output folder:
 
