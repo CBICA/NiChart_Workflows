@@ -10,19 +10,15 @@ import pandas as pd
 ## Config file
 configfile: "../../config/vTest1/config.yaml"
 
-## Read SPARE model paths
-df_tmp = pd.read_csv('../../config/' + config['list_SPARE_models'], index_col = 'Model')
-DICT_SPARE = df_tmp.Path.to_dict()
-
-#print(DICT_SPARE)
-#input()
-
 ###################################
 ## Read config vars and lists
 
-#dir_input = config["dir_input"]
-#dir_output = config["version"] + "/prep_data"
-#rois = config["list_ROIs"]
+dir_input = config["dir_input"]
+dir_output = config["version"]
+derived_rois = config["list_derived_ROIs"]
+rois = config["list_ROIs_all"]
+rois_sel = config["list_ROIs_selected"]
+spare_types = config["SPARE_types"]
 #covars = config["list_covars"]
 
 #df = pd.read_csv("../../config/" + config["list_studies_merge"])
@@ -32,17 +28,30 @@ DICT_SPARE = df_tmp.Path.to_dict()
 ###################################
 ## Set out file names
 
-#OUT_CONFIG = expand("../../data/{dir_output}/config/{cname}", cname = ["config_prep_data.yaml",  config["list_covars"], config["list_ROIs"], config["list_studies_merge"]], dir_output = config["dir_output"])
+#OUT_CONFIG = expand("../../data/{dir_output}/config/{cname}", cname = ["config_prep_data.yaml",  config["list_covars"], config["list_ROIs"], config["list_studies_merge"]], dir_output = dir_output)
 
-#OUT_RESULTS = expand("../../data/{dir_output}/combined/combined_{dtype}_{ctype}.csv", dtype = config["roi_types"], ctype = config["corr_types"], dir_output = config["dir_output"])
+#OUT_RESULTS = expand("../../data/{dir_output}/combined/combined_{dtype}_{ctype}.csv", dtype = config["roi_types"], ctype = config["corr_types"], dir_output = dir_output)
 
 #OUT_FILES = OUT_CONFIG + OUT_RESULTS
 
-OUT_FILES = ["../../data/NiChart_Study1/Study1/harmonized/Study1_MUSE_raw_COMBAT.csv"]
-OUT_FILES = ["../../data/NiChart_Study1/Study1/spare/Study1_MUSE_raw_COMBAT_SPARE-AD.csv"]
+OUT_FILES = ["../../data/vTest1/Study1/harmonized/Study1_MUSE_raw_COMBAT.csv"]
+OUT_FILES = ["../../data/vTest1/Study1/spare/Study1_MUSE_raw_COMBAT_SPARE-AD.csv"]
+
+OUT_FILES = ["../../data/vTest1/Study1/harmonized/Study1_DLMUSE_raw_COMBAT.csv"]
+
+OUT_FILES = ["../../data/vTest1/Study1/spare/Study1_DLMUSE_raw_COMBAT.csv"]
+
+OUT_FILES = ["../../data/vTest1/Study1/spare/Study1_DLMUSE_raw_COMBAT_SPARE-AD.csv"]
+
+OUT_FILES = ["../../data/vTest1/Study1/out_data/Study1_SPARE-AD.csv"]
+
+
+OUT_FILES = ["../../data/vTest1/Study1/out_data/Study1_DLMUSE_raw_SPARE-Scores.csv"]
+
+
 #"../../data/{dir_output}/{study}/harmonized/{study}_{dtype}.csv"
 
-print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
+#print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
 
 ###################################
 ## Rules
@@ -60,7 +69,7 @@ rule copy_config:
     input:
         "../../config/{cname}"
     output:
-        expand("../../data/{dir_output}/config/{{cname}}", dir_output = config["dir_output"])
+        expand("../../data/{dir_output}/config/{{cname}}", dir_output = dir_output)
     shell:
         "cp -v {input} {output}"
 
@@ -88,7 +97,7 @@ rule merge_covars_to_rois:
     Merge covars to ROIs
     '''
     input:
-        covar=expand("../../data/{dir_input}/{{study}}/{{study}}_Demog.csv", dir_input = config["dir_input"]),
+        covar=f"../../data/{dir_input}/{{study}}/{{study}}_Demog.csv",
         roi="../../data/{dir_output}/{study}/renamed/{study}_{dtype}.csv",
     params:
         key_var = 'MRID'
@@ -176,94 +185,115 @@ rule combat_apply:
     shell:
         "bash ../../utils/generic/util_combat_test.sh {input} {output}"
 
-#rule remove_COMBAT_suffix:
-    #'''
-    #Remove COMBAT suffix (_HARM)
-    #FIXME: Ideally COMBAT should be run with an arg to create output var names without a suffix
-    #'''        
-    #input:
-        #"../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_init.csv"
-    #params:
-        #rm_suff='_HARM'
-    #output:
-        #"../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_renamed.csv"
-    #resources:
-        #mem_mb=8000
-    #shell:
-        #"python ../../utils/generic/util_remove_suffix.py {input} {params} {output}"
+rule remove_COMBAT_suffix:
+    '''
+    Remove COMBAT suffix (_HARM)
+    FIXME: Ideally COMBAT should be run with an arg to create output var names without a suffix
+    '''        
+    input:
+        "../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_init.csv"
+    params:
+        rm_suff='_HARM'
+    output:
+        "../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_renamed.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_remove_suffix.py {input} {params} {output}"
 
-#rule select_harmonized_roi_vars:
-    #'''
-    #Select variables from harmonized data
-    #'''
-    #input:
-        #in_csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_renamed.csv",
-        #in_dict=expand("../../config/{rois}", rois = config["list_ROIs_selected"])
-    #params:
-        #dict_var = 'Code',
-        #vars_list = 'MRID',
-    #output:
-        #"../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_rois.csv"
-    #resources:
-        #mem_mb=8000
-    #shell:
-        #"python ../../utils/generic/util_select_vars.py {input} {params} {output}"
+rule select_harmonized_roi_vars:
+    '''
+    Select variables from harmonized data
+    '''
+    input:
+        in_csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_renamed.csv",
+        in_dict=expand("../../config/{rois}", rois = config["list_ROIs_selected"])
+    params:
+        dict_var = 'Code',
+        vars_list = 'MRID',
+    output:
+        "../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_rois.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_select_vars.py {input} {params} {output}"
 
-#rule merge_covars_to_harmonized_rois:
-    #'''
-    #Merge covars to ROIs
-    #'''
-    #input:
-        #covar=expand("../../data/{dir_input}/{{study}}/{{study}}_Demog.csv", dir_input = config["dir_input"]),
-        #roi="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT_rois.csv"
-    #params:
-        #key_var = 'MRID'
-    #output:
-        #"../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT.csv"
-    #resources:
-        #mem_mb=8000
-    #shell:
-        #"python ../../utils/generic/util_merge_dfs.py {input} {params} {output}"
+rule calc_derived_ROIs:
+    '''
+    Calculate derived ROIs from harmonized data
+    - If the input data already includes derived ROIs, they will not be updated
+    '''        
+    input:
+        in_csv=f"../../data/{dir_output}/{{study}}/harmonized/{{study}}_{{dtype}}_COMBAT_rois.csv",
+        dict=f"../../config/{derived_rois}"
+    params:
+        key_var='MRID',
+        roi_prefix='MUSE_'
+    output:
+        f"../../data/{dir_output}/{{study}}/harmonized/{{study}}_{{dtype}}_COMBAT_all.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_combine_MUSE_rois.py {input} {params} {output}"
 
-#rule select_vars_spare:
-    #'''
-    #Select variables for harmonization
-    #'''
-    #input:
-        #in_csv="../../data/{dir_output}/{study}/harmonized/{study}_{dtype}_COMBAT.csv",
-        #dict_csv=expand("../../config/{rois}", rois = config["list_ROIs_selected"])
-    #params:
-        #dict_var = 'Code',
-        #covars ='MRID,Age,Sex,DLICV',
-    #output:
-        #"../../data/{dir_output}/{study}/spare/{study}_{dtype}_COMBAT.csv"
-    #resources:
-        #mem_mb=8000
-    #shell:
-        #"python ../../utils/generic/util_select_vars.py {input} {params} {output}"
+rule merge_covars_to_harmonized_rois:
+    '''
+    Merge covars to ROIs
+    '''
+    input:
+        covar=f"../../data/{dir_input}/{{study}}/{{study}}_Demog.csv",
+        roi=f"../../data/{dir_output}/{{study}}/harmonized/{{study}}_{{dtype}}_COMBAT_rois.csv"
+    params:
+        key_var = 'MRID'
+    output:
+        f"../../data/{dir_output}/{{study}}/harmonized/{{study}}_{{dtype}}_COMBAT.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_merge_dfs.py {input} {params} {output}"
 
-#def get_spare_model(wildcards):
-    #model_name = config["list_SPARE-" + wildcards.stype]
-    #path_spare='../../models/' + model_name
-    #return path_spare
+rule select_vars_spare:
+    '''
+    Select variables for harmonization
+    '''
+    input:
+        in_csv=f"../../data/{dir_output}/{{study}}/harmonized/{{study}}_{{dtype}}_COMBAT.csv",
+        dict_csv=f"../../config/{rois_sel}"
+    params:
+        dict_var = 'Code',
+        covars ='MRID,Age,Sex,DLICV',
+    output:
+        f"../../data/{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_select_vars.py {input} {params} {output}"
 
-#rule spare_apply:
-    #input:
-        #data="../../data/{dir_output}/{study}/spare/{study}_{dtype}_COMBAT.csv",
-        #mdl=get_spare_model
-    #output:
-        #data="../../data/{dir_output}/{study}/spare/{study}_{dtype}_COMBAT_SPARE-{stype}.csv"
-    #shell:
-        #"bash ../../utils/generic/util_spare_test.sh {input} {output}"
+def get_spare_model(wildcards):
+    model_name = config["model_SPARE-" + wildcards.stype]
+    path_spare='../../models/' + model_name
+    return path_spare
 
-##rule spare_combine:
-    ##input:
-        ##data=expand("../../data/{{study}}/SPARE/{{study}}_{dtype}_{stype}.csv", dtype = ['raw', 'normICV'], stype = ['C_AD-ISTAG', 'C_V-Diabetes', 'C_V-Hypertension', 'R_V-Age']) 
-    ##output:
-        ##csv="../../data/{study}/output_long/{study}_SPARE-Scores.csv"
-    ##shell:
-        ##"echo python utils/generic/util_combine_spare.py {output} {input}; "
-        ##"python utils/generic/util_combine_spare.py {output} {input}"
+rule spare_apply:
+    input:
+        data=f"../../data/{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT.csv",
+        mdl=get_spare_model
+    output:
+        data=f"../../data/{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT_SPARE-{{stype}}.csv"
+    shell:
+        "bash ../../utils/generic/util_spare_test.sh {input} {output}"
+
+def get_spare_results(wildcards):
+    data_spare=expand(f"../../data/{dir_output}/{{study}}/spare/{{study}}_{{dtype}}_COMBAT_SPARE-{{stype}}.csv", study = wildcards.study, dtype = wildcards.dtype, stype = spare_types)
+    return data_spare
+
+rule spare_combine:
+    input:
+        get_spare_results
+    output:
+        csv=f"../../data/{dir_output}/{{study}}/out_data/{{study}}_{{dtype}}_SPARE-Scores.csv"
+    shell:
+        "python ../../utils/generic/util_merge_dfs_multi.py {output} {input}"
 
 ###################################    
 #### Create summary output
