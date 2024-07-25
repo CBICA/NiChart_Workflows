@@ -260,5 +260,5 @@ rule launch_viewer:
         "NiChart_Viewer --data_file {input}"
         
 ## Delete flag for the viewer, so that it will launch the viewer next time
-if os.path.exists(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
+if os.path.exists(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv"):
     os.remove(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
