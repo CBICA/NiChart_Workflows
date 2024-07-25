@@ -29,7 +29,7 @@ Users can apply NiChart workflows to their data with a few simple steps:
 
 ***! For successful workflow execution, user data should meet specific requirements. Current version uses DLMUSE ROI volumes and sample demographic data as input. Please see the test dataset for an example.***
 
-***! Users can use the [DLMUSE package](https://neuroimagingchart.com/components/#Image%20Processing), installing it s as an independent package***
+***! DLMUSE ROI volumes can be calculated by installing and running the [DLMUSE package](https://github.com/cbiCA/NiChart_DLMUSE), or by running the [NiChart cloud](https://neuroimagingchart.com/portal)***
 
 ## Examples:
 
