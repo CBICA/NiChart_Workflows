@@ -27,9 +27,9 @@ Users can apply NiChart workflows to their data with a few simple steps:
 
 ***3. Run Workflow:*** Execute the Snakemake workflow to initiate the analysis.
 
-***!For successful workflow execution, user data should meet specific requirements. Current version uses DLMUSE ROI volumes and sample demographic data as input. Please see the test dataset for an example.***
+***! For successful workflow execution, user data should meet specific requirements. Current version uses DLMUSE ROI volumes and sample demographic data as input. Please see the test dataset for an example.***
 
-***!For image processing users can use the [DLMUSE package](https://neuroimagingchart.com/components/#Image%20Processing), installing it s as an independent package***
+***! Users can use the [DLMUSE package](https://neuroimagingchart.com/components/#Image%20Processing), installing it s as an independent package***
 
 ## Examples:
 
