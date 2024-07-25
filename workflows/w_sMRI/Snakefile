@@ -284,4 +284,4 @@ rule launch_viewer:
     output:
         touch(f"../../data/{dir_output}/{{study}}/out_combined/{{study}}_{{dtype}}_VIEWED.csv")
     shell:
-        "NiChartViewer --data {input}"
+        "NiChart_Viewer --data_file {input}"
