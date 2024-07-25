@@ -1,6 +1,6 @@
 # **NiChart<sup>Workflows</sup>** 
 
-A toolkit that allows users to apply **NiChart** processing methods and pre-trained models on their data.  **NiChart<sup>Workflows</sup>** includes tools for [image processing](https://neuroimagingchart.com/components/#Image%20Processing), [data harmonization](https://neuroimagingchart.com/components/#Harmonization) and [machine learning](https://neuroimagingchart.com/components/#Machine%20Learning), using pre-trained models and reference distributions provided by [**NiChart<sup>Engine</sup>**](https://github.com/gurayerus/NiChart_Engine). **NiChart<sup>Workflow</sup>** utilizes [Snakemake](https://snakemake.github.io) workflows to define multi-step image processing and data analytics pipelines.
+A toolkit that allows users to apply **NiChart** processing methods and pre-trained models on their data.  **NiChart<sup>Workflows</sup>** includes tools for [data harmonization](https://neuroimagingchart.com/components/#Harmonization) and [machine learning](https://neuroimagingchart.com/components/#Machine%20Learning), using pre-trained models and reference distributions provided by [**NiChart<sup>Engine</sup>**](https://github.com/gurayerus/NiChart_Engine). **NiChart<sup>Workflow</sup>** utilizes [Snakemake](https://snakemake.github.io) workflows to define multi-step image processing and data analytics pipelines.
 
 ![Workflow Diagram](docs/NiChart_Flowchart_Level1B_v2.png)
 
@@ -27,9 +27,9 @@ Users can apply NiChart workflows to their data with a few simple steps:
 
 ***3. Run Workflow:*** Execute the Snakemake workflow to initiate the analysis.
 
-***! For successful workflow execution, user data should meet specific requirements:***
+***!For successful workflow execution, user data should meet specific requirements. Current version uses DLMUSE ROI volumes and sample demographic data as input. Please see the test dataset for an example.***
 
-***! Please see the test dataset for an example***
+***!For image processing users can use the [DLMUSE package](https://neuroimagingchart.com/components/#Image%20Processing), installing it s as an independent package***
 
 ## Examples:
 
