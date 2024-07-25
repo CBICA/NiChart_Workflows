@@ -4,7 +4,7 @@ tmp/
 Tmp/
 temp/
 Temp/
-data/
+output/
 slurm_logs/
 .snakemake/
 
