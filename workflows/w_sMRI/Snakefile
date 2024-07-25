@@ -260,8 +260,8 @@ rule launch_viewer:
     shell:
         "NiChart_Viewer --data_file {input}"
         
-## Delete flag for the viewer, so that it will launch the viewer next time
-print('remove flag ' + f"../../{dir_output}/flag_VIEWED.csv")
-if os.path.exists(f"../../{dir_output}/flag_VIEWED.csv"):
-    print('remove flag ' + f"../../{dir_output}/flag_VIEWED.csv")
-    os.remove(f"../../{dir_output}/flag_VIEWED.csv")
+### Delete flag for the viewer, so that it will launch the viewer next time
+#print('remove flag ' + f"../../{dir_output}/flag_VIEWED.csv")
+#if os.path.exists(f"../../{dir_output}/flag_VIEWED.csv"):
+    #print('remove flag ' + f"../../{dir_output}/flag_VIEWED.csv")
+    #os.remove(f"../../{dir_output}/flag_VIEWED.csv")
