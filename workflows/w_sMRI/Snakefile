@@ -348,9 +348,3 @@ rule spare_combine:
     #output:
         #touch("../../data/{study}/output_compact/{study}_sMRI_All_VIEWED.flag")
     #shell:
-        
-
-
-
-
-
