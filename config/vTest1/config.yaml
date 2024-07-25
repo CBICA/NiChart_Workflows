@@ -1,8 +1,10 @@
 version: vTest1
 dir_input: InitData_Test1
 list_ROIs_all: vTest1/lists/MUSE/list_MUSE_all.csv
-list_ROIs_selected: vTest1/lists/MUSE/list_MUSE_single.csv
+list_ROIs_single: vTest1/lists/MUSE/list_MUSE_single.csv
+list_ROIs_primary: vTest1/lists/MUSE/list_MUSE_primary.csv
 list_derived_ROIs: vTest1/lists/MUSE/list_MUSE_mapping_derived.csv
+corr_type: normICV
 model_combat: vISTAG1/COMBAT/combined_DLMUSE_raw_COMBATModel.pkl.gz
 model_SPARE-AD: vISTAG1/SPARE/combined_DLMUSE_raw_COMBAT_SPARE-AD_Model.pkl.gz
 model_SPARE-Age: vISTAG1/SPARE/combined_DLMUSE_raw_COMBAT_SPARE-Age_Model.pkl.gz
@@ -21,5 +23,4 @@ SPARE_types:
  - Smoking 
 roi_types:
  - DLMUSE
-corr_types:
- - raw
+ 
