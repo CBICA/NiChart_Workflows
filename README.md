@@ -8,7 +8,7 @@ A toolkit that allows users to apply **NiChart** processing methods and pre-trai
 
 Install dependencies for the **NiChart<sup>Workflows</sup>** in a conda environment using the following commands. **NiChart<sup>Workflows</sup>** uses snakemake to automate things, which is (most easily) installed with mamba.
 
-Note: Installation tested on macOS and Linux. Windows compatibility is not guaranteed.
+***Note:*** Installation tested on macOS and Linux. Windows compatibility is not guaranteed.
 
 ```bash
 conda install -n base -c conda-forge mamba # If needed
@@ -18,7 +18,7 @@ mamba activate NiChart_Workflows
 pip install NiChart-Viewer-Demo spare-scores NiChartHarmonize
 mamba install -c conda-forge -c bioconda snakemake
 ```
-Note: Mamba installation from conda-forge may be slow. Linux x86 64 users can use a faster alternative:
+***Note:*** Mamba installation from conda-forge may be slow. Linux x86 64 users can use a faster alternative:
 
 ```bash
 1. wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
