@@ -16,6 +16,15 @@ mamba activate NiChart_Workflows
 pip install NiChart-Viewer-Demo spare-scores NiChartHarmonize
 mamba install -c conda-forge -c bioconda snakemake
 ```
+Note: Mamba installation from conda-forge may be slow. Linux x86 64 users can use a faster alternative:
+
+```bash
+1. wget https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+2. bash Mambaforge-Linux-x86_64.sh
+3. For installation, Yes everything
+4. Re-start your kernel (re-open)
+5. Check installation by typing "mamba" in the prompt
+```
 
 ## Usage:
 
