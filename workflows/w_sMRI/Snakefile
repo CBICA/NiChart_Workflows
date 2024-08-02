@@ -40,7 +40,7 @@ OUT_FLAG = [f"../../{dir_output}/flag_VIEWED.csv"]
 OUT_FILES = [OUT_CONFIG] + OUT_RESULTS + OUT_FLAG
 #OUT_FILES = [OUT_CONFIG]
 
-print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
+#print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
 
 ###################################
 ## Rules
@@ -61,12 +61,25 @@ rule copy_config:
     shell:
         "cp -v {input} {output}"
 
-rule rename_rois:
+rule run_dlmuse:
     '''
     Rename MUSE roi indices to roi codes
     '''
     input:
         roi=f"../../{dir_input}/{{study}}/{{study}}_{{dtype}}.csv",
+    output:
+        f"../../{dir_output}/{{study}}/dlmuse/{{study}}_{{dtype}}.csv"
+    resources:
+        mem_mb=32000
+    shell:
+        "bash ../../utils/dlmuse/util_run_dlmuse.sh {input} {output}"
+
+rule rename_rois:
+    '''
+    Rename MUSE roi indices to roi codes
+    '''
+    input:
+        roi=f"../../{dir_output}/{{study}}/dlmuse/{{study}}_{{dtype}}.csv",
         dict=f"../../{rois}"
     output:
         f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
