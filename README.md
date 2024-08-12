@@ -44,18 +44,21 @@ Users can apply NiChart workflows to their data with a few simple steps:
 
 ## Examples:
 
-We provided a toy dataset "input/vTest1" as an example. Please use it as a reference for your input data. You can apply a sample NiChart workflow on this dataset as follows:
+We provided a test dataset "input/vTest1" as an example. The dataset includes demographic data (Study1_Demog.csv) and regional brain volumes (Study1_DLMUSE.csv) for a test set. Please use the test data as a reference for your input data.
+
+You can apply the structural MRI workflow on this dataset as follows:
 
 ```console
 cd workflows/w_sMRI
 snakemake -np           ## Dry run
 snakemake --cores 1     ## Run the pipeline on Study1 data provided in the vTest1 dataset
 ```
-If the workflow works successfully, results will be created inside the output folder:
+
+If the workflow works successfully, workflow steps will be run on the data. Result files will be created inside the output folder:
 
 > "../../output/vTest1",
 
-And the viewer will be launched using the result file as input.
+and the viewer will be launched with the combined result file as input. 
 
 ## Contributing:
 
