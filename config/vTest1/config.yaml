@@ -19,11 +19,11 @@ studies:
 SPARE_types:
  - AD
  - Age
- #- Diabetes
- #- Hyperlipidemia
- #- Hypertension
- #- Obesity
- #- Smoking 
+ - Diabetes
+ - Hyperlipidemia
+ - Hypertension
+ - Obesity
+ - Smoking 
 seg_types:
  - DLMUSE
  
