@@ -12,7 +12,8 @@ import os
 ## Default config file 
 ## Runs the workflow with the test dataset
 ## Edit this for running it on other datasets
-in_config = "../../config/vTest/config.yaml"
+in_config = "../../config/vTest1/config.yaml"
+#in_config = "../../config/vTest2/config.yaml"
 configfile: f"{in_config}"
 ###################################
 
@@ -38,7 +39,8 @@ OUT_RESULTS = expand(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{sty
 OUT_FLAG = [f"../../{dir_output}/flag_VIEWED.csv"]
 
 OUT_FILES = [OUT_CONFIG] + OUT_RESULTS + OUT_FLAG
-#OUT_FILES = [OUT_CONFIG]
+
+#OUT_FILES = ["../../output/vTest2/Study1/dlmuse/Study1_DLMUSE.csv"]
 
 #print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
 
@@ -66,20 +68,39 @@ rule run_dlmuse:
     Rename MUSE roi indices to roi codes
     '''
     input:
-        roi=f"../../{dir_input}/{{study}}/{{study}}_{{dtype}}.csv",
+        f"../../{dir_input}/{{study}}/{{study}}_Demog.csv",
     output:
-        f"../../{dir_output}/{{study}}/dlmuse/{{study}}_{{dtype}}.csv"
+        f"../../{dir_output}/{{study}}/dlmuse/{{study}}_DLMUSE.csv"
     resources:
         mem_mb=32000
     shell:
-        "bash ../../utils/dlmuse/util_run_dlmuse.sh {input} {output}"
+        "bash ../../utils/dlmuse/util_dlmuse_apply.sh {input} {output}"
 
-rule rename_rois:
+ruleorder: rename_rois_user > rename_rois_computed
+
+rule rename_rois_computed:
     '''
     Rename MUSE roi indices to roi codes
     '''
     input:
         roi=f"../../{dir_output}/{{study}}/dlmuse/{{study}}_{{dtype}}.csv",
+        dict=f"../../{rois}"
+    output:
+        f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
+    params:
+        var_from = 'Index',
+        var_to = 'Code'
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_rename_df_columns.py {input} {params} {output}"
+
+rule rename_rois_user:
+    '''
+    Rename MUSE roi indices to roi codes
+    '''
+    input:
+        roi=f"../../{dir_input}/{{study}}/{{study}}_{{dtype}}.csv",
         dict=f"../../{rois}"
     output:
         f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
@@ -152,7 +173,7 @@ rule filter_age_harmonize:
         min_val='50',
         max_val='95',
     output:
-        temp(f"../../{dir_output}/{{study}}/filtered_data/{{study}}_{{dtype}}.csv")
+        f"../../{dir_output}/{{study}}/filtered_data/{{study}}_{{dtype}}.csv"
     resources:
         mem_mb=8000
     shell:

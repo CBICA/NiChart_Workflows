@@ -1,10 +1,10 @@
-version: vTest
-dir_input: input/vTest
-dir_output: output/vTest
-list_ROIs_all: config/vTest/lists/MUSE/list_MUSE_all.csv
-list_ROIs_single: config/vTest/lists/MUSE/list_MUSE_single.csv
-list_ROIs_primary: config/vTest/lists/MUSE/list_MUSE_primary.csv
-list_derived_ROIs: config/vTest/lists/MUSE/list_MUSE_mapping_derived.csv
+version: vTest2
+dir_input: input/vTest2
+dir_output: output/vTest2
+list_ROIs_all: config/vTest2/lists/MUSE/list_MUSE_all.csv
+list_ROIs_single: config/vTest2/lists/MUSE/list_MUSE_single.csv
+list_ROIs_primary: config/vTest2/lists/MUSE/list_MUSE_primary.csv
+list_derived_ROIs: config/vTest2/lists/MUSE/list_MUSE_mapping_derived.csv
 corr_type: normICV
 model_combat: models/vISTAG1/COMBAT/combined_DLMUSE_raw_COMBATModel.pkl.gz
 model_SPARE-AD: models/vISTAG1/SPARE/combined_DLMUSE_raw_COMBAT_SPARE-AD_Model.pkl.gz
@@ -15,15 +15,15 @@ model_SPARE-Hypertension: models/vISTAG1/SPARE/combined_DLMUSE_raw_COMBAT_SPARE-
 model_SPARE-Obesity: models/vISTAG1/SPARE/combined_DLMUSE_raw_COMBAT_SPARE-Obesity_Model.pkl.gz
 model_SPARE-Smoking: models/vISTAG1/SPARE/combined_DLMUSE_raw_COMBAT_SPARE-Smoking_Model.pkl.gz
 studies:
- - StudyTest1
+ - Study1
 SPARE_types:
  - AD
  - Age
- - Diabetes
- - Hyperlipidemia
- - Hypertension
- - Obesity
- - Smoking 
+ #- Diabetes
+ #- Hyperlipidemia
+ #- Hypertension
+ #- Obesity
+ #- Smoking 
 seg_types:
  - DLMUSE
  
