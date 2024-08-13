@@ -1,10 +1,23 @@
 #! /bin/bash -x
 
+# download NiChart DLMUSE package
+echo "Downloading NiChart DLMUSE..."
+if [ -d "/NiChart_DLMUSE" ]
+then
+    echo "Clone already exists!"
+else
+    git clone https://github.com/CBICA/NiChart_DLMUSE.git
+fi
+cd NiChart_DLMUSE
+pip install .
+cd ..
+echo "NiChart DLMUSE downloaded!"
 echo "About to run: $0 $@"
+
 
 ## Read input
 in_csv=$(realpath $1)
-out_csv=$(realpath $2)
+out_csv=$2
 
 ## Prep init data
 in_dir=$(dirname ${in_csv})
@@ -14,10 +27,10 @@ tmp_dir="${out_dir}/tmprun_dlmuse"
 mkdir -pv "${tmp_dir}/nnUNet_preprocessed"
 mkdir -pv "${tmp_dir}/nnUNet_raw_database"
 mkdir -pv "${tmp_dir}/nnUNet_out"
-ln -s `realpath ../../../../NiChart/NiChart_Models/nnUNet_model` ${tmp_dir}/nnUNet_model
+ln -s `realpath ./nnUNet_model` "${tmp_dir}/nnUNet_model"
 ln -s `realpath ${in_dir}/Images` "${tmp_dir}/nnUNet_raw_database/nnUNet_raw_data"
-droi=`realpath ../../../../NiChart/NiChart_DLMUSE/shared/dicts/MUSE_mapping_derived_rois.csv`
-roi=`realpath ../../../../NiChart/NiChart_DLMUSE/shared/dicts/MUSE_mapping_consecutive_indices.csv`
+droi=`realpath NiChart_DLMUSE/shared/dicts/MUSE_mapping_derived_rois.csv`
+roi=`realpath NiChart_DLMUSE/shared/dicts/MUSE_mapping_consecutive_indices.csv`
 
 ## Apply dlmuse test
 cmd="NiChart_DLMUSE --indir ${tmp_dir}/nnUNet_raw_database/nnUNet_raw_data --outdir ${tmp_dir}/nnUNet_out --pipelinetype structural --derived_ROI_mappings_file $droi --MUSE_ROI_mappings_file $roi --nnUNet_raw_data_base ${tmp_dir}/nnUNet_raw_database --nnUNet_preprocessed ${tmp_dir}/nnUNet_preprocessed --model_folder ${tmp_dir}/nnUNet_model --all_in_gpu True --mode fastest --disable_tta"

@@ -1,4 +1,4 @@
-# **NiChart<sup>Workflows</sup>** 
+# **NiChart<sup>Workflows</sup>**
 
 A toolkit that allows users to apply **NiChart** processing methods and pre-trained models on their data.  **NiChart<sup>Workflows</sup>** includes tools for [data harmonization](https://neuroimagingchart.com/components/#Harmonization) and [machine learning](https://neuroimagingchart.com/components/#Machine%20Learning), using pre-trained models and reference distributions provided by [**NiChart<sup>Engine</sup>**](https://github.com/gurayerus/NiChart_Engine). **NiChart<sup>Workflow</sup>** utilizes [Snakemake](https://snakemake.github.io) workflows to define multi-step image processing and data analytics pipelines.
 
@@ -13,7 +13,7 @@ Install dependencies for the **NiChart<sup>Workflows</sup>** in a conda environm
 ```bash
 conda install -n base -c conda-forge mamba # If needed
 mamba init # If first time installing, then potentially source ~/.bashrc
-mamba create -c conda-forge -c bioconda -n NiChart_Workflows python=3.8 
+mamba create -c conda-forge -c bioconda -n NiChart_Workflows python=3.12
 mamba activate NiChart_Workflows
 pip install NiChart-Viewer-Demo spare-scores NiChartHarmonize
 mamba install -c conda-forge -c bioconda snakemake
@@ -58,7 +58,7 @@ If the workflow works successfully, workflow steps will be run on the data. Resu
 
 > "../../output/vTest1",
 
-and the viewer will be launched with the combined result file as input. 
+and the viewer will be launched with the combined result file as input.
 
 ## Contributing:
 
@@ -76,4 +76,3 @@ This project is licensed under the [License Name] license. Please refer to the L
 ## Contact:
 
 For any inquiries, please contact guray.erus@pennmedicine.upenn.edu. (Last Updated: 5/24/2024)
-

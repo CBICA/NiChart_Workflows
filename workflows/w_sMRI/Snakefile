@@ -9,10 +9,10 @@ import os
 #report: "report/workflow.rst"
 
 ###################################
-## Default config file 
+## Default config file
 ## Runs the workflow with the test dataset
 ## Edit this for running it on other datasets
-in_config = "../../config/vTest1/config.yaml"
+in_config = "../../config/vTest2/config.yaml"
 #in_config = "../../config/vTest2/config.yaml"
 configfile: f"{in_config}"
 ###################################
@@ -192,7 +192,7 @@ rule calc_derived_ROIs:
     '''
     Calculate derived ROIs from harmonized data
     - If the input data already includes derived ROIs, they will not be updated
-    '''        
+    '''
     input:
         in_csv=f"../../{dir_output}/{{study}}/out_combat/{{study}}_{{dtype}}_COMBAT_single.csv",
         dict=f"../../{derived_rois}"
@@ -293,7 +293,7 @@ rule launch_viewer:
         touch(f"../../{dir_output}/flag_VIEWED.csv"),
     shell:
         "NiChart_Viewer --data_file {input}"
-        
+
 ## Delete flag for the viewer, so that it will launch the viewer next time
 if os.path.exists(f"../../{dir_output}/flag_VIEWED.csv"):
     os.remove(f"../../{dir_output}/flag_VIEWED.csv")

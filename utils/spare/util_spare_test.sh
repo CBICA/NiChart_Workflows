@@ -1,5 +1,20 @@
 #! /bin/bash
 
+# download spare package
+echo "Downloading spare score package..."
+if [ -d "/spare_score" ]
+then
+    echo "spare score clone already exists!"
+else
+    git clone https://github.com/CBICA/spare_score.git
+fi
+python setup.py bdist_wheel
+cd dist
+WHEEL_FILE=$(ls spare_scores*)
+pip install "$WHEEL_FILE"
+cd ..
+echo "spare score is downloaded!"
+
 ## Read input
 in_csv=$1
 in_mdl=$2
