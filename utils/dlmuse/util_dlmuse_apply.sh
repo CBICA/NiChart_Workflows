@@ -14,9 +14,10 @@ cd ..
 echo "NiChart DLMUSE downloaded!"
 echo "About to run: $0 $@"
 
+
 ## Read input
 in_csv=$(realpath $1)
-out_csv=$(realpath $2)
+out_csv=$2
 
 ## Prep init data
 in_dir=$(dirname ${in_csv})
@@ -26,7 +27,7 @@ tmp_dir="${out_dir}/tmprun_dlmuse"
 mkdir -pv "${tmp_dir}/nnUNet_preprocessed"
 mkdir -pv "${tmp_dir}/nnUNet_raw_database"
 mkdir -pv "${tmp_dir}/nnUNet_out"
-ln -s `realpath ../../../../NiChart/NiChart_Models/nnUNet_model` ${tmp_dir}/nnUNet_model
+ln -s `realpath ./nnUNet_model` "${tmp_dir}/nnUNet_model"
 ln -s `realpath ${in_dir}/Images` "${tmp_dir}/nnUNet_raw_database/nnUNet_raw_data"
 droi=`realpath NiChart_DLMUSE/shared/dicts/MUSE_mapping_derived_rois.csv`
 roi=`realpath NiChart_DLMUSE/shared/dicts/MUSE_mapping_consecutive_indices.csv`
