@@ -2,8 +2,6 @@
 
 # download NiChart DLMUSE package
 echo "Downloading NiChart DLMUSE..."
-# conda create --name NCP python=3.9
-# conda activate NCP
 if [ -d "/NiChart_DLMUSE" ]
 then
     echo "Clone already exists!"
