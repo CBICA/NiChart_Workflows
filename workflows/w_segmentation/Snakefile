@@ -1,0 +1,179 @@
+## Import packages
+import pandas as pd
+import os
+
+## Flag to indicate rules that will be run locally (e.g. not submitted to slurm)
+#localrules:
+
+### Report data
+#report: "report/workflow.rst"
+
+###################################
+## Default config file 
+## Runs the workflow with the test dataset
+## Edit this for running it on other datasets
+in_config = "../../config/vTest1/config.yaml"
+in_config = "../../config/vTest2/config.yaml"
+configfile: f"{in_config}"
+###################################
+
+
+###################################
+## Read config vars and lists
+dir_input = config["dir_input"]
+dir_output = config["dir_output"]
+derived_rois = config["list_derived_ROIs"]
+rois = config["list_ROIs_all"]
+rois_single = config["list_ROIs_single"]
+rois_primary = config["list_ROIs_primary"]
+spare_types = config["SPARE_types"]
+model_combat = config["model_combat"]
+seg_types = config["seg_types"]
+corr_type = config["corr_type"]
+studies = config["studies"]
+
+###################################
+## Set output file names
+OUT_CONFIG = f"../../{dir_output}/config/config.yaml"
+OUT_RESULTS = expand(f"../../{dir_output}/{{study}}/out_combined/{{study}}_{{stype}}_All.csv", study = studies, stype = seg_types)
+OUT_FLAG = [f"../../{dir_output}/flag_VIEWED.csv"]
+
+OUT_FILES = [OUT_CONFIG] + OUT_RESULTS + OUT_FLAG
+
+#OUT_FILES = ["../../output/vTest2/Study1/dlmuse/Study1_DLMUSE.csv"]
+
+#print("Target out files:" + '\n' + '\n'.join(OUT_FILES) + '\n')
+
+###################################
+## Rules
+rule ALL:
+    '''
+    First rule: lists the final expected out files
+    '''
+    input: OUT_FILES
+
+rule copy_config:
+    '''
+    Rule for copying config files to output dir
+    '''
+    input:
+        f"{in_config}"
+    output:
+        f"{OUT_CONFIG}"
+    shell:
+        "cp -v {input} {output}"
+
+rule reorient_img:
+    '''
+    
+    '''
+    input:
+        f"../../{dir_input}/{{study}}/{{study}}_Demog.csv",
+    output:
+        f"../../{dir_output}/{{study}}/dlmuse/{{study}}_DLMUSE.csv"
+    resources:
+        mem_mb=32000
+    shell:
+        "bash ../../utils/dlmuse/util_dlmuse_apply.sh {input} {output}"
+
+rule run_dlicv:
+    '''
+    
+    '''
+    input:
+        roi=f"../../{dir_output}/{{study}}/dlmuse/{{study}}_{{dtype}}.csv",
+        dict=f"../../{rois}"
+    output:
+        f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
+    params:
+        var_from = 'Index',
+        var_to = 'Code'
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_rename_df_columns.py {input} {params} {output}"
+
+rule apply_icv_mask:
+    '''
+    
+    '''
+    input:
+        roi=f"../../{dir_input}/{{study}}/{{study}}_{{dtype}}.csv",
+        dict=f"../../{rois}"
+    output:
+        f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
+    params:
+        var_from = 'Index',
+        var_to = 'Code'
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_rename_df_columns.py {input} {params} {output}"
+
+rule run_dlmuse:
+    '''
+    
+    '''
+    input:
+        f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_raw.csv"
+    params:
+        icv_var = 'MUSE_702',
+        exclude_vars = 'MRID',
+        suffix = 'NONE'
+    output:
+        f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}_{corr_type}.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        f"python ../../utils/generic/util_corr_icv.py {{input}} {corr_type} {{params}} {{output}}"
+
+rule relabel_rois:
+    '''
+    
+    '''
+    input:
+        covar=f"../../{dir_input}/{{study}}/{{study}}_Demog.csv",
+        roi=f"../../{dir_output}/{{study}}/out_rois/{{study}}_{{dtype}}.csv",
+    params:
+        key_var = 'MRID'
+    output:
+        temp(f"../../{dir_output}/{{study}}/combined/{{study}}_{{dtype}}.csv")
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_merge_dfs.py {input} {params} {output}"
+
+rule combine_masks:
+    '''
+    
+    '''
+    input:
+        in_csv=f"../../{dir_output}/{{study}}/combined/{{study}}_{{dtype}}_raw.csv",
+        dict_csv=f"../../{rois_single}"
+    params:
+        dict_var = 'Code',
+        covars ='MRID,Age,Sex,SITE,DLICV',
+    output:
+        temp(f"../../{dir_output}/{{study}}/sel_vars/{{study}}_{{dtype}}_raw.csv")
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_select_vars.py {input} {params} {output}"
+
+rule reorient_to_init:
+    '''
+    
+    '''
+    input:
+        f"../../{dir_output}/{{study}}/sel_vars/{{study}}_{{dtype}}.csv",
+    params:
+        var_name='Age',
+        min_val='50',
+        max_val='95',
+    output:
+        f"../../{dir_output}/{{study}}/filtered_data/{{study}}_{{dtype}}.csv"
+    resources:
+        mem_mb=8000
+    shell:
+        "python ../../utils/generic/util_filter_num_var.py {input} {params} {output}"
+
